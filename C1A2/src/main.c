@@ -2,14 +2,15 @@
  * Copyright (C) 2026 by Anirudh Singh
  *
  * Redistribution, modification or use of this software in source or binary
- * forms is permitted as long as the files maintain this copyright. Users are 
+ * forms is permitted as long as the files maintain this copyright. Users are
  * permitted to modify this and use it to learn about the field of embedded
  * software. Anirudh Singh is not liable for any misuse of this material.
  *************************************************************************/
 
 /**
- * @file main.c 
- * @brief Main function that creates thread objects and contains the function to calculate the sum as per the thread index value
+ * @file main.c
+ * @brief Main function that creates thread objects and contains the function to
+ * calculate the sum as per the thread index value
  *
  * @author Anirudh Singh
  * @date 11th August 2026
@@ -29,7 +30,7 @@ typedef struct {
 /**
  * Function to calculate sum
  */
-void * sum_thread( void *thread_ptr ) {
+void *sum_thread(void *thread_ptr) {
   int sum = 0;
   thread_params_t *thread_params = (thread_params_t *)(thread_ptr);
   int idx = thread_params->thread_idx;
@@ -37,32 +38,27 @@ void * sum_thread( void *thread_ptr ) {
   /**
    * calculate sum
    */
-  for ( int i = 1; i <= idx; i++ ) {
+  for (int i = 1; i <= idx; i++) {
     sum = sum + i;
   }
 
   /**
    * Print to syslog
    */
-  syslog(LOG_INFO,
-         "%s: Thread idx=%d, sum[1...%d]=%d",
-         COURSE_PREFIX,
-         (thread_params -> thread_idx),
-         (thread_params -> thread_idx),
-         sum);
+  syslog(LOG_INFO, "%s: Thread idx=%d, sum[1...%d]=%d", COURSE_PREFIX,
+         (thread_params->thread_idx), (thread_params->thread_idx), sum);
 
   return NULL;
 }
 
-int main( int argc, char *argv[] )
-{
-  openlog("incdecthread", LOG_PID | LOG_CONS, LOG_DAEMON);    // Open logging
+int main(int argc, char *argv[]) {
+  openlog("incdecthread", LOG_PID | LOG_CONS, LOG_DAEMON); // Open logging
 
   /**
    * Get system info
    */
   struct utsname info;
-  if ( get_sys_info(&info) == -1 ) {
+  if (get_sys_info(&info) == -1) {
     printf("%s get_sys_info() failure!\n", COURSE_PREFIX);
     closelog();
     return -1;
@@ -71,38 +67,34 @@ int main( int argc, char *argv[] )
   /**
    * System info in syslog
    */
-  syslog(LOG_INFO,
-         "%s %s %s %s %s %s GNU/LINUX",
-         COURSE_PREFIX,
-         info.sysname,
-         info.nodename,
-         info.release,
-         info.version,
-         info.machine);
+  syslog(LOG_INFO, "%s %s %s %s %s %s GNU/LINUX", COURSE_PREFIX, info.sysname,
+         info.nodename, info.release, info.version, info.machine);
 
-  pthread_t thread[NUM_THREADS];                                                                // Create the array of thread objects
-  thread_params_t thread_params[NUM_THREADS];                                                   // Array of thread parameters
+  pthread_t thread[NUM_THREADS]; // Create the array of thread objects
+  thread_params_t thread_params[NUM_THREADS]; // Array of thread parameters
 
-  for ( int i = 1; i <= NUM_THREADS; i++) {                                                     // Initialise thread indices
+  for (int i = 1; i <= NUM_THREADS; i++) { // Initialise thread indices
     thread_params[i].thread_idx = i;
   }
 
-  for ( int i = 1; i <= NUM_THREADS; i++ ) {                                                    // Execute the sum function on different threads
-    if ( pthread_create(&thread[i], NULL, sum_thread, (void *) &(thread_params[i])) != 0 ) {
+  for (int i = 1; i <= NUM_THREADS;
+       i++) { // Execute the sum function on different threads
+    if (pthread_create(&thread[i], NULL, sum_thread,
+                       (void *)&(thread_params[i])) != 0) {
       syslog(LOG_ERR, "%s pthread_create() error", COURSE_PREFIX);
       closelog();
       return -1;
     }
   }
 
-  for ( int i = 1; i <= NUM_THREADS; i++ ) {                                                    // Join the threads
-    if ( pthread_join(thread[i], NULL) != 0 ) {
+  for (int i = 1; i <= NUM_THREADS; i++) { // Join the threads
+    if (pthread_join(thread[i], NULL) != 0) {
       syslog(LOG_ERR, "%s pthread_join() error", COURSE_PREFIX);
       closelog();
       return -1;
     }
   }
 
-  closelog();                                                                                   // Close logging and exit
+  closelog(); // Close logging and exit
   return 0;
 }
