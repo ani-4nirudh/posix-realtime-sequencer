@@ -1,3 +1,20 @@
+/**************************************************************************
+ * Copyright (C) 2026 by Anirudh Singh
+ *
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. Users are 
+ * permitted to modify this and use it to learn about the field of embedded
+ * software. Anirudh Singh is not liable for any misuse of this material.
+ *************************************************************************/
+
+/**
+ * @file main.c 
+ * @brief Main function that creates thread objects and contains the function to calculate the sum as per the thread index value
+ *
+ * @author Anirudh Singh
+ * @date 11th August 2026
+ */
+
 #include "sysinfo.h"
 
 #define NUM_THREADS 128
@@ -17,10 +34,16 @@ void * sum_thread( void *thread_ptr ) {
   thread_params_t *thread_params = (thread_params_t *)(thread_ptr);
   int idx = thread_params->thread_idx;
 
+  /**
+   * calculate sum
+   */
   for ( int i = 1; i <= idx; i++ ) {
     sum = sum + i;
   }
 
+  /**
+   * Print to syslog
+   */
   syslog(LOG_INFO,
          "%s: Thread idx=%d, sum[1...%d]=%d",
          COURSE_PREFIX,
@@ -33,7 +56,7 @@ void * sum_thread( void *thread_ptr ) {
 
 int main( int argc, char *argv[] )
 {
-  openlog("incdecthread", LOG_PID | LOG_CONS, LOG_DAEMON);
+  openlog("incdecthread", LOG_PID | LOG_CONS, LOG_DAEMON);    // Open logging
 
   /**
    * Get system info

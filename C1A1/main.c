@@ -65,12 +65,15 @@ int main(int argc, char *argv[])
     return -1;
   }
 
+  /**
+    * Joining threads 
+    */
   if ( pthread_join(thread_1, NULL) != 0 ) {
     syslog(LOG_ERR, "%s pthread_join() failure", COURSE_PREFIX);
     closelog();
     return -1;
   }
 
-  closelog();
+  closelog();                                                           // Close logging and exit
   return 0;
 }
