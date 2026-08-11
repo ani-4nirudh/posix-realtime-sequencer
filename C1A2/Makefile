@@ -1,3 +1,5 @@
+# Makefile
+
 include sources.mk
 
 TARGET = main
@@ -6,10 +8,10 @@ CC = gcc
 CPPFLAGS =
 CFLAGS = -Wall -Werror -g -O0 -std=c99
 
-PPFILES = $(SOURCES:.c=.i)
+OBJECTS = $(SOURCES:.c=.o)
 DEPS = $(SOURCES:.c=.d)
 ASMFILES = $(SOURCES:.c=.asm)
-OBJECTS = $(SOURCES:.c=.o)
+PPFILES = $(SOURCES:.c=.i)
 
 %.i: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) -E $< -o $@
@@ -27,13 +29,13 @@ compile-all: $(OBJECTS)
 build: $(TARGET).out
 
 $(TARGET).out: $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
-	size $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) $< -o $@
 
 .PHONY: $(TARGET).asm
 $(TARGET).asm: $(TARGET).out
 	objdump -S $< > $@
+	size $@
 
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(PPFILES) $(DEPS) $(ASMFILES) $(TARGET).out $(TARGET).asm
+	rm -f $(OBJECTS) $(DEPS) $(ASMFILES) $(PPFILES) $(TARGET).out $(TARGET).asm
