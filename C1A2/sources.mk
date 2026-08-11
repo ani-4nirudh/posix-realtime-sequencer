@@ -1,4 +1,5 @@
 # sources.mk
 
-SOURCES = main.c
-INCLUDES =
+SOURCES = ./src/main.c \
+					./src/sysinfo.c
+INCLUDES = -I ./include

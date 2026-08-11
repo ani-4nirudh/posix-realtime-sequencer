@@ -29,7 +29,8 @@ compile-all: $(OBJECTS)
 build: $(TARGET).out
 
 $(TARGET).out: $(OBJECTS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) $< -o $@
+		$(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) $^ -o $@
+	size $@
 
 .PHONY: $(TARGET).asm
 $(TARGET).asm: $(TARGET).out
