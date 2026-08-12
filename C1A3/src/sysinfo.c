@@ -7,6 +7,10 @@
  *
  */
 
+#include <errno.h>
+#include <string.h>
+#include <syslog.h>
+
 #include "sysinfo.h"
 
 int get_sys_info(struct utsname *ptr) {

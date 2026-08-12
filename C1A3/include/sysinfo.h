@@ -19,19 +19,7 @@
 #ifndef __SYSINFO_H__
 #define __SYSINFO_H__
 
-#include <errno.h>
-#include <pthread.h>
-#include <sched.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/utsname.h>
-#include <syslog.h>
-
-/**
- * This is a constant which will be prefixed to the syslog messages
- *
- */
-#define COURSE_PREFIX "[COURSE:1][ASSIGNMENT:3]"
 
 /**
  * @brief Get system information using uname function
