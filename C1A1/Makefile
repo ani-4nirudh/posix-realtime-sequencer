@@ -36,4 +36,4 @@ $(TARGET).asm: $(TARGET).out
 
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(PPFILES) $(DEPS) $(ASMFILES) $(TARGET).out $(TARGET).asm
+	rm -f $(OBJECTS) $(PPFILES) $(DEPS) $(ASMFILES) $(TARGET).out $(TARGET).asm $(TARGET).d $(TARGET).o

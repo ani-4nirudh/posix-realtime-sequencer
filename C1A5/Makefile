@@ -11,6 +11,10 @@ CFLAGS = -Wall -Werror -Wextra -Wpedantic -g -O0 -std=c99
 
 OBJECTS = $(SOURCES:.c=.o)
 DEPS = $(SOURCES:.c=.d)
+
+# Read header file dependencies when available
+-include $(DEPS)
+
 ASMFILES = $(SOURCES:.c=.asm)
 PPFILES = $(SOURCES:.c=.i)
 
@@ -40,4 +44,4 @@ $(TARGET).asm: $(TARGET).out
 
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(DEPS) $(ASMFILES) $(PPFILES) $(TARGET).out $(TARGET).asm
+	rm -f $(OBJECTS) $(DEPS) $(ASMFILES) $(PPFILES) $(TARGET).out $(TARGET).asm $(TARGET).d $(TARGET).o

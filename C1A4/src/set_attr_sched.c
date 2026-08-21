@@ -104,7 +104,7 @@ int set_thread_attr_sched(pthread_attr_t *attr_t, int new_prio) {
   ret = pthread_attr_setaffinity_np(attr_t, sizeof(cpuset), &cpuset);
 
   if (ret != 0) {
-    fprintf(stderr, "pthread_create error: %s\n", strerror(ret));
+    fprintf(stderr, "pthread_attr_setaffinity_np() error: %s\n", strerror(ret));
     return ret;
   }
 

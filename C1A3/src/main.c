@@ -18,15 +18,9 @@
 
 #define _GNU_SOURCE
 
-#include <pthread.h>
-#include <sched.h>
-#include <stdio.h>
-#include <string.h>
-#include <syslog.h>
-
-#include "app_config.h"
-#include "set_attr_sched.h"
 #include "sysinfo.h"
+
+#define NUM_THREADS 128
 
 /**
  * Define the thread parameters
@@ -46,8 +40,8 @@ void *sum_thread(void *thread_ptr) {
   /**
    * calculate sum
    */
-  for (int i = 0; i < idx; i++) {
-    sum = sum + (i + 1);
+  for (int i = 1; i <= idx; i++) {
+    sum = sum + i;
   }
 
   /*
@@ -58,8 +52,9 @@ void *sum_thread(void *thread_ptr) {
   /**
    * Print to syslog
    */
-  syslog(LOG_INFO, "%s: Thread idx=%d, sum[1...%d]=%d Running on core : %d",
-         COURSE_PREFIX, idx, idx, sum, core);
+  syslog(LOG_INFO, "%s: Thread idx=%d, sum[1...%d]=%d\nRunning on Core : %d",
+         COURSE_PREFIX, (thread_params->thread_idx),
+         (thread_params->thread_idx), sum, core);
 
   return NULL;
 }
@@ -68,7 +63,7 @@ int main(int argc, char *argv[]) {
   openlog("incdecthread", LOG_PID | LOG_CONS, LOG_DAEMON); // Open logging
 
   /**
-   * Get system infog
+   * Get system info
    */
   struct utsname info;
   if (get_sys_info(&info) == -1) {
@@ -83,49 +78,66 @@ int main(int argc, char *argv[]) {
   syslog(LOG_INFO, "%s %s %s %s %s %s GNU/LINUX", COURSE_PREFIX, info.sysname,
          info.nodename, info.release, info.version, info.machine);
 
-  /**
-   * Multi-threading operation to calculate sum
-   */
   pthread_t thread[NUM_THREADS]; // Create the array of thread objects
   thread_params_t thread_params[NUM_THREADS]; // Array of thread parameters
+  pthread_attr_t attr[NUM_THREADS]; // Create array of thread attributes
+  struct sched_param param;
 
-  /**
-   * Creating thread attributes and setting priority
-   */
-  pthread_attr_t attr_t; // Create thread attributes
-  int new_prio = 20;
-
-  if (set_thread_attr_sched(&attr_t, new_prio) != 0) {
-    fprintf(stderr, "set_thread_attr_sched() failure!");
-    pthread_attr_destroy(&attr_t);
-    closelog();
-    return -1;
+  for (int i = 1; i <= NUM_THREADS; i++) { // Initialise thread indices
+    thread_params[i].thread_idx = i;
   }
 
-  for (int i = 0; i < NUM_THREADS; i++) { // Initialise thread indices
-    thread_params[i].thread_idx = i + 1;
-  }
-
-  // Execute the sum function on different threads
-  for (int i = 0; i < NUM_THREADS; i++) {
-    int ret = pthread_create(&thread[i], &attr_t, sum_thread,
-                             (void *)&(thread_params[i]));
-    if (ret != 0) {
-      fprintf(stderr, "pthread_create error: %s\n", strerror(ret));
-      fprintf(stderr, "Run executable using SUDO\n");
-      pthread_attr_destroy(&attr_t);
+  for (int i = 1; i <= NUM_THREADS; i++) {
+    if (pthread_attr_init(&attr[i]) != 0) {
+      syslog(LOG_ERR, "%s pthread_attr_init() error", COURSE_PREFIX);
       closelog();
-      return ret;
+      return -1;
+    }
+
+    if (pthread_attr_setschedpolicy(&attr, SCHED_FIFO) != 0) {
+      syslog(LOG_ERR, "%s pthread_attr_setschedpolicy() error", COURSE_PREFIX);
+      closelog();
+      return -1;
+    }
+
+    param.sched_priority = 50;
+    if (pthread_attr_setschedparam(&attr, &param) != 0) {
+      syslog(LOG_ERR, "%s pthread_attr_setschedparam() error", COURSE_PREFIX);
+      closelog();
+      return -1;
+    }
+
+    if (pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) != 0) {
+      syslog(LOG_ERR, "%s pthread_attr_setinheritscheduler() error",
+             COURSE_PREFIX);
+      closelog();
+      return -1;
     }
   }
 
-  for (int i = 0; i < NUM_THREADS; i++) { // Join the threads
-    int ret = pthread_join(thread[i], NULL);
-    if (ret != 0) {
-      fprintf(stderr, "pthread_join error: %s\n", strerror(ret));
-      pthread_attr_destroy(&attr_t);
+  // Execute the sum function on different threads
+  for (int i = 1; i <= NUM_THREADS; i++) {
+    if (pthread_create(&thread[i], &attr, sum_thread,
+                       (void *)&(thread_params[i])) != 0) {
+      syslog(LOG_ERR, "%s pthread_create() error", COURSE_PREFIX);
       closelog();
-      return ret;
+      return -1;
+    }
+  }
+
+  for (int i = 1; i <= NUM_THREADS; i++) {
+    if (pthread_attr_destroy(&attr[i]) != 0) {
+      syslog(LOG_ERR, "%s pthread_attr_destroy() error", COURSE_PREFIX);
+      closelog();
+      return -1;
+    }
+  }
+
+  for (int i = 1; i <= NUM_THREADS; i++) { // Join the threads
+    if (pthread_join(thread[i], NULL) != 0) {
+      syslog(LOG_ERR, "%s pthread_join() error", COURSE_PREFIX);
+      closelog();
+      return -1;
     }
   }
 
