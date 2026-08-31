@@ -25,27 +25,19 @@
 
 #include "app_config.h"
 #include "get_default_attr.h"
-#include "set_attr_sched.h"
+#include "rt_core.h"
+#include "services.h"
 #include "sysinfo.h"
-
-void *generic_service_1(void *thread_params_ptr) {
-  int sum = 0;
-  thread_params_t *ptr = (thread_params_t *)thread_params_ptr;
-  int idx = ptr->thread_idx;
-
-  int core = sched_getcpu();
-
-  for (int i = 0; i <= idx; i++) {
-    sum += i;
-  }
-
-  syslog(LOG_INFO, "%s: Thread idx=%d, sum[1...%d]=%d Running on core : %d",
-         COURSE_PREFIX, idx, idx, sum, core);
-
-  return NULL;
-}
+#include "thread_ctx.h"
+#include "time_utils.h"
 
 int main(void) {
+  /**
+   * Open time logging
+   */
+  clock_gettime(MY_CLOCK_TYPE, &g_start_time);
+  g_start_realtime = get_realtime(&g_start_time);
+
   /**
    * Start logging daemon
    */
@@ -56,11 +48,9 @@ int main(void) {
    */
   struct utsname info;
   if (get_sys_info(&info) == -1) {
-    fprintf(stderr,
-            "get_system_info() failure! Check syslogs at /log/var/syslogs\n");
+    fprintf(stderr, "get_system_info() failure! Check syslogs at /log/var/syslogs\n");
   }
-  syslog(LOG_INFO, "%s %s %s %s %s %s GNU/LINUX", COURSE_PREFIX, info.sysname,
-         info.nodename, info.release, info.version, info.machine);
+  syslog(LOG_INFO, "%s %s %s %s %s %s GNU/LINUX", COURSE_PREFIX, info.sysname, info.nodename, info.release, info.version, info.machine);
 
   int ret;
 
@@ -76,39 +66,24 @@ int main(void) {
   /**
    * Thread and associated variables
    */
-  pthread_t threads[NUM_THREADS];
-  thread_params_t thread_params[NUM_THREADS];
-  pthread_attr_t attrs[NUM_THREADS];
+  thread_ctx t[NUM_THREADS];
 
   /**
-   * Initialising the thread param variables
+   * Initialising the thread indices and thread creation
    */
   for (int i = 0; i < NUM_THREADS; i++) {
-    thread_params[i].thread_idx = (i + 1);
-    ret = set_attr_sched(&attrs[i], &thread_params[i]);
+    t[i].thread_idx = i + 1; // Initialising the thread indices
+
+    ret = thread_ctx_set_attr(&t[i]); // Setting the thread object attributes
     if (ret != 0) {
-      fprintf(stderr, "set_attr_sched() failure: %s\n", strerror(ret));
-      int s = pthread_attr_destroy(&attrs[i]);
-      if (s != 0) {
-        fprintf(stderr, "pthread_attr_destroy() failure: %s", strerror(s));
-      }
+      thread_ctx_destroy(&t[i]);
       closelog();
       return ret;
     }
-  }
 
-  /**
-   * Creating threads
-   */
-  for (int i = 0; i < NUM_THREADS; i++) {
-    ret = pthread_create(&threads[i], &attrs[i], generic_service_1,
-                         (void *)&thread_params[i]);
+    ret = thread_ctx_create(&t[i]); // Creating the thread objects
     if (ret != 0) {
-      fprintf(stderr, "pthread_create() failure: %s\n", strerror(ret));
-      int s = pthread_attr_destroy(&attrs[i]);
-      if (s != 0) {
-        fprintf(stderr, "pthread_attr_destroy() failure: %s", strerror(s));
-      }
+      thread_ctx_destroy(&t[i]);
       closelog();
       return ret;
     }
@@ -118,13 +93,9 @@ int main(void) {
    * Joining threads
    */
   for (int i = 0; i < NUM_THREADS; i++) {
-    ret = pthread_join(threads[i], NULL);
+    ret = thread_ctx_join(&t[i]);
     if (ret != 0) {
-      fprintf(stderr, "pthread_join() failure: %s\n", strerror(ret));
-      int s = pthread_attr_destroy(&attrs[i]);
-      if (s != 0) {
-        fprintf(stderr, "pthread_attr_destroy() failure: %s", strerror(s));
-      }
+      thread_ctx_destroy(&t[i]);
       closelog();
       return ret;
     }

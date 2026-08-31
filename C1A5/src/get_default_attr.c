@@ -45,8 +45,7 @@ int get_default_attr(void) {
    */
   ret = pthread_attr_getinheritsched(&default_attr, &i);
   if (ret != 0) {
-    fprintf(stderr, "pthread_attr_getinheritsched() failure: %s",
-            strerror(ret));
+    fprintf(stderr, "pthread_attr_getinheritsched() failure: %s", strerror(ret));
     return ret;
   }
   switch (i) {
@@ -66,8 +65,7 @@ int get_default_attr(void) {
    */
   ret = pthread_attr_destroy(&default_attr);
   if (ret != 0) {
-    fprintf(stderr, "pthread_attr_getinheritsched() failure: %s",
-            strerror(ret));
+    fprintf(stderr, "pthread_attr_getinheritsched() failure: %s", strerror(ret));
     return ret;
   }
 

@@ -2,7 +2,11 @@
 
 SOURCES = ./src/main.c \
 					./src/sysinfo.c \
-					./src/set_attr_sched.c \
-					./src/get_default_attr.c
+					./src/get_default_attr.c \
+					./src/rt_core.c \
+					./src/time_utils.c \
+					./src/services.c \
+					./src/thread_ctx.c \
+					./src/sequencer.c
 
 INCLUDES = -I ./include
