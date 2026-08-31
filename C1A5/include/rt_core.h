@@ -1,20 +1,11 @@
-#ifndef __RT_CORE_H__
-#define __RT_CORE_H__
+#ifndef RT_CORE_H
+#define RT_CORE_H
 
 #include <semaphore.h>
 #include <time.h>
 
 #include "app_config.h"
-
-/**
- * Creating semaphores
- */
-extern sem_t g_sem[NUM_THREADS];
-
-/**
- * Creating volatile flags for the services
- */
-extern volatile int g_abort_services[NUM_THREADS];
+#include "rt_core.h"
 
 /**
  * Start time for the program 
@@ -23,8 +14,12 @@ extern struct timespec g_start_time;
 extern double g_start_realtime; // Variable to store the time after conversion from timespec object
 
 extern int g_timer_fd;
-extern unsigned long long int g_seq_cnt;
-extern unsigned long long int g_sequence_periods;
 
-#endif /* ! __RT_CORE_H__
-#define __RT_CORE_H__ */
+extern sem_t g_sem[NUM_THREADS];
+extern volatile int g_abort_services[NUM_THREADS];
+
+void program_start_time(void);
+double get_realtime(struct timespec *p_time);
+
+#endif /* ! RT_CORE_H
+#define RT_CORE_H */

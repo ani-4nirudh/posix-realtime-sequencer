@@ -26,17 +26,19 @@
 #include "app_config.h"
 #include "get_default_attr.h"
 #include "rt_core.h"
+#include "sequencer.h"
 #include "services.h"
 #include "sysinfo.h"
 #include "thread_ctx.h"
-#include "time_utils.h"
 
 int main(void) {
+  int ret = 0;
+  int cleanup_ret = 0;
+
   /**
    * Open time logging
    */
-  clock_gettime(MY_CLOCK_TYPE, &g_start_time);
-  g_start_realtime = get_realtime(&g_start_time);
+  program_start_time();
 
   /**
    * Start logging daemon
@@ -52,14 +54,27 @@ int main(void) {
   }
   syslog(LOG_INFO, "%s %s %s %s %s %s GNU/LINUX", COURSE_PREFIX, info.sysname, info.nodename, info.release, info.version, info.machine);
 
-  int ret;
-
   /**
    * Get default thread attributes
    */
   ret = get_default_attr();
   if (ret != 0) {
     fprintf(stderr, "get_default_attr() failure: %s\n", strerror(ret));
+    return ret;
+  }
+
+  Sequencer seq;
+  ret = sequencer_sems_init();
+  if (ret != 0) {
+    sequencer_sems_destroy();
+    return ret;
+  }
+
+  ret = sequencer_init(&seq);
+  if (ret != 0) {
+    if (seq.attr_initialised) {
+      sequencer_attr_destroy(&seq);
+    }
     return ret;
   }
 
@@ -72,22 +87,22 @@ int main(void) {
    * Initialising the thread indices and thread creation
    */
   for (int i = 0; i < NUM_THREADS; i++) {
-    t[i].thread_idx = i + 1; // Initialising the thread indices
+    thread_ctx_init(&t[i], i); // Initialising the thread indices
 
     ret = thread_ctx_set_attr(&t[i]); // Setting the thread object attributes
     if (ret != 0) {
-      thread_ctx_destroy(&t[i]);
       closelog();
-      return ret;
+      goto cleanup;
     }
 
     ret = thread_ctx_create(&t[i]); // Creating the thread objects
     if (ret != 0) {
-      thread_ctx_destroy(&t[i]);
       closelog();
-      return ret;
+      goto cleanup;
     }
   }
+
+  sequencer_start(&seq);
 
   /**
    * Joining threads
@@ -95,11 +110,32 @@ int main(void) {
   for (int i = 0; i < NUM_THREADS; i++) {
     ret = thread_ctx_join(&t[i]);
     if (ret != 0) {
-      thread_ctx_destroy(&t[i]);
       closelog();
-      return ret;
+      goto cleanup;
     }
   }
 
+  sequencer_join(&seq);
+
+  /**
+   * Return 0 on success
+   */
   return 0;
+
+cleanup:
+  for (int i = 0; i < NUM_THREADS; i++) {
+    if (t[i].thread_created) {
+      cleanup_ret = thread_ctx_join(&t[i]);
+      if (cleanup_ret != 0) {
+        fprintf(stderr, "thread_ctx_create() failure: %s\n", strerror(cleanup_ret));
+      }
+    }
+    if (t[i].attr_initialised) {
+      cleanup_ret = thread_ctx_destroy(&t[i]);
+      if (cleanup_ret != 0) {
+        fprintf(stderr, "thread_ctx_destroy() failure: %s\n", strerror(cleanup_ret));
+      }
+    }
+  }
+  return ret;
 }

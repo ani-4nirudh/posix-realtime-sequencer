@@ -1,5 +1,5 @@
-#ifndef __GET_DEFAULT_ATTR_H__
-#define __GET_DEFAULT_ATTR_H__
+#ifndef GET_DEFAULT_ATTR_H
+#define GET_DEFAULT_ATTR_H
 
 int get_default_attr(void);
 

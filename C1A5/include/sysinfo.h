@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef __SYSINFO_H__
-#define __SYSINFO_H__
+#ifndef SYSINFO_H
+#define SYSINFO_H
 
 #include <sys/utsname.h>
 
@@ -31,5 +31,5 @@
  */
 int get_sys_info(struct utsname *ptr);
 
-#endif /* !__SYSINFO_H__                                                       \
-#define __SYSINFO_H__ */
+#endif /* !SYSINFO_H                                                       \
+#define SYSINFO_H */
