@@ -1,0 +1,10 @@
+BasedOnStyle: LLVM
+ColumnLimit: 150
+BinPackArguments: false
+BinPackParameters: false 
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+PenaltyBreakAssignment: 200
+PenaltyBreakBeforeFirstCallParameter: 100
+ReflowComments: false
