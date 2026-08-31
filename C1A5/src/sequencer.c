@@ -187,7 +187,7 @@ void *sequencer_thread_func(void *ptr) {
 
   unsigned long long tick_count = 0;
 
-  while (tick_count < TOTAL_TICKS) {
+  while (tick_count <= TOTAL_TICKS) {
     uint64_t expirations;
 
     ssize_t n = read(g_timer_fd, &expirations, sizeof(expirations));

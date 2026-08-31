@@ -22,6 +22,10 @@ void *generic_service(void *thread_ctx_ptr) {
     // printf("Waiting on the sempahore g_sem[%d] for thread[%d]\n", sem_idx, sem_idx);
     sem_wait(&g_sem[sem_idx]);
 
+    if (g_abort_services[sem_idx]) {
+      break;
+    }
+
     // Increase the counter
     exec_count++;
 
