@@ -8,8 +8,8 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file sequencer.c
+ * @brief Functions to implement the generic sequencer
  *
  * @description
  *
@@ -31,8 +31,94 @@
 #include "sequencer.h"
 
 /**
- * Initialising semaphores
+ * @brief Private function to be used by the Sequencer thread 
+ *
+ * @param ptr Pointer to the Sequencer object
+ *
+ * @description
+ * - The timer is created based on the macros defined inside app_config.h
+ * - Based on the tick_count and THREAD_RATES the semaphorre corresponding to the service thread is released.
+ * - Posting the semaphores to abort the services
+ * - Closing the timer file descriptor
+ * 
+ * @return None
  */
+
+void *sequencer_thread_func(void *ptr) {
+  Sequencer *ptr_sequencer = (Sequencer *)(ptr);
+
+  /*
+   * Get the core that the Sequencer thread is running on
+   */
+  int core = sched_getcpu();
+  syslog(LOG_INFO, "%s: Sequencer thread running on core : %d\n", COURSE_PREFIX, core);
+  syslog(LOG_INFO, "Sequencer thread started for object %p\n", (void *)ptr_sequencer);
+
+  struct itimerspec its;
+  its.it_value.tv_sec = BASE_PERIOD_NS / 1000000000ULL;
+  its.it_value.tv_nsec = BASE_PERIOD_NS % 1000000000ULL;
+  its.it_interval.tv_sec = 0;
+  its.it_interval.tv_nsec = BASE_PERIOD_NS;
+
+  g_timer_fd = timerfd_create(TIMERFD_CLOCK_TYPE, 0);
+  if (g_timer_fd == -1) {
+    fprintf(stderr, "sequencer_thread_func: timerfd_create() failure %s\n", strerror(errno));
+    return NULL;
+  }
+
+  int ret = timerfd_settime(g_timer_fd, 0, &its, NULL);
+  if (ret == -1) {
+    fprintf(stderr, "sequencer_thread_func: timerfd_create() failure %s\n", strerror(errno));
+    close(g_timer_fd);
+    g_timer_fd = -1;
+    return NULL;
+  }
+
+  unsigned long long tick_count = 0;
+
+  while (tick_count <= TOTAL_TICKS) {
+    uint64_t expirations;
+
+    ssize_t n = read(g_timer_fd, &expirations, sizeof(expirations));
+    if (n == -1) {
+      fprintf(stderr, "sequencer_thread_func: read() failure %s\n", strerror(errno));
+      return NULL;
+    }
+
+    for (uint64_t e = 0; e < expirations; e++) {
+      tick_count++;
+
+      for (int i = 0; i < NUM_THREADS; i++) {
+        if ((tick_count % THREAD_RATES[i]) == 0) {
+          ret = sem_post(&g_sem[i]);
+          if (ret == -1) {
+            fprintf(stderr, "sequencer_thread_func: sem_post() failure %s\n", strerror(errno));
+            return NULL;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Shutdown services
+   */
+  for (int i = 0; i < NUM_THREADS; i++) {
+    g_abort_services[i] = 1;
+    sem_post(&g_sem[i]);
+  }
+
+  // Get the logs for the tick_count and TOTAL_TICKS
+  // syslog(LOG_CRIT,
+  //        "Sequencer thread exiting normally: tick_count = %llu, TOTAL_TICKS = %llu\n",
+  //        (unsigned long long)tick_count,
+  //        (unsigned long long)TOTAL_TICKS);
+
+  close(g_timer_fd);
+  g_timer_fd = -1;
+  return NULL;
+}
+
 int sequencer_sems_init(void) {
   for (int i = 0; i < NUM_THREADS; i++) {
     g_abort_services[i] = 0;
@@ -46,9 +132,6 @@ int sequencer_sems_init(void) {
   return 0;
 }
 
-/**
- * Destroying semaphores
- */
 int sequencer_sems_destroy(void) {
   for (int i = 0; i < NUM_THREADS; i++) {
     int ret = sem_destroy(&g_sem[i]);
@@ -61,9 +144,6 @@ int sequencer_sems_destroy(void) {
   return 0;
 }
 
-/**
- * Setting the sequencer thread attributes and priority
- */
 int sequencer_init(Sequencer *p_seq) {
 
   /**
@@ -177,81 +257,6 @@ int sequencer_join(Sequencer *p_seq) {
 
   p_seq->thread_created = 0;
   return 0;
-}
-
-void *sequencer_thread_func(void *ptr) {
-  Sequencer *ptr_sequencer = (Sequencer *)(ptr);
-
-  /*
-   * Get the core that the Sequencer thread is running on
-   */
-  int core = sched_getcpu();
-  syslog(LOG_INFO, "%s: Sequencer thread running on core : %d\n", COURSE_PREFIX, core);
-  syslog(LOG_INFO, "Sequencer thread started for object %p\n", (void *)ptr_sequencer);
-
-  struct itimerspec its;
-  its.it_value.tv_sec = BASE_PERIOD_NS / 1000000000ULL;
-  its.it_value.tv_nsec = BASE_PERIOD_NS % 1000000000ULL;
-  its.it_interval.tv_sec = 0;
-  its.it_interval.tv_nsec = BASE_PERIOD_NS;
-
-  g_timer_fd = timerfd_create(TIMERFD_CLOCK_TYPE, 0);
-  if (g_timer_fd == -1) {
-    fprintf(stderr, "sequencer_thread_func: timerfd_create() failure %s\n", strerror(errno));
-    return NULL;
-  }
-
-  int ret = timerfd_settime(g_timer_fd, 0, &its, NULL);
-  if (ret == -1) {
-    fprintf(stderr, "sequencer_thread_func: timerfd_create() failure %s\n", strerror(errno));
-    close(g_timer_fd);
-    g_timer_fd = -1;
-    return NULL;
-  }
-
-  unsigned long long tick_count = 0;
-
-  while (tick_count <= TOTAL_TICKS) {
-    uint64_t expirations;
-
-    ssize_t n = read(g_timer_fd, &expirations, sizeof(expirations));
-    if (n == -1) {
-      fprintf(stderr, "sequencer_thread_func: read() failure %s\n", strerror(errno));
-      return NULL;
-    }
-
-    for (uint64_t e = 0; e < expirations; e++) {
-      tick_count++;
-
-      for (int i = 0; i < NUM_THREADS; i++) {
-        if ((tick_count % THREAD_RATES[i]) == 0) {
-          ret = sem_post(&g_sem[i]);
-          if (ret == -1) {
-            fprintf(stderr, "sequencer_thread_func: sem_post() failure %s\n", strerror(errno));
-            return NULL;
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Shutdown services
-   */
-  for (int i = 0; i < NUM_THREADS; i++) {
-    g_abort_services[i] = 1;
-    sem_post(&g_sem[i]);
-  }
-
-  // Get the logs for the tick_count and TOTAL_TICKS
-  // syslog(LOG_CRIT,
-  //        "Sequencer thread exiting normally: tick_count = %llu, TOTAL_TICKS = %llu\n",
-  //        (unsigned long long)tick_count,
-  //        (unsigned long long)TOTAL_TICKS);
-
-  close(g_timer_fd);
-  g_timer_fd = -1;
-  return NULL;
 }
 
 int sequencer_start(Sequencer *p_seq) {

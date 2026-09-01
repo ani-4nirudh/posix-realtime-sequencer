@@ -9,8 +9,8 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file sysinfo.c
+ * @brief Source file for sysinfo.h
  *
  * @description
  *

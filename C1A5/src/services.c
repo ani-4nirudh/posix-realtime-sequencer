@@ -8,8 +8,8 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file services.c
+ * @brief Functions to implement the service used by each thread
  *
  * @description
  *
@@ -41,18 +41,24 @@ void *generic_service(void *thread_ctx_ptr) {
     // printf("Waiting on the sempahore g_sem[%d] for thread[%d]\n", sem_idx, sem_idx);
     sem_wait(&g_sem[sem_idx]);
 
+    /**
+    * Check for flags to abort the service
+    */
     if (g_abort_services[sem_idx]) {
       break;
     }
 
-    // Increase the counter
-    exec_count++;
+    exec_count++; // Increase the release counter
 
     int core = sched_getcpu(); // Get the core number thread is running on
 
+    /**
+     * Get the time elapsed since the start of program
+     */
     clock_gettime(MY_CLOCK_TYPE, &current_time_val);
     current_realtime = get_realtime(&current_time_val);
     double elapsed = current_realtime - g_start_realtime;
+
     syslog(LOG_CRIT,
            "%s: Service %d running on Thread %d Core : %d, for release %llu @ sec=%6.9lf\n",
            COURSE_PREFIX,

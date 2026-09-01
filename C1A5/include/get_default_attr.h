@@ -8,10 +8,8 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
- *
- * @description
+ * @file get_default_attr.h
+ * @brief Get the info on default scheduling parameters before setting the realtime scheduling for sequencer and service threads
  *
  * @author Anirudh Singh
  * @date 20th August 2026

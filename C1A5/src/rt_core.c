@@ -8,8 +8,8 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file rt_core.c
+ * @brief Declaration of the extern variables and function description 
  *
  * @description
  *

@@ -8,8 +8,8 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file get_default_attr.c
+ * @brief Source file for get_default_attr.h
  *
  * @description
  *

@@ -8,10 +8,11 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file services.h
+ * @brief Header file for services.c
  *
  * @description
+ * Each thread instance would run its own generic_service() function. Tracking the service release for each thread is performed using the gloabl sempahore variables.
  *
  * @author Anirudh Singh
  * @date 20th August 2026
@@ -20,6 +21,13 @@
 #ifndef SERVICES_H
 #define SERVICES_H
 
+/**
+ * @brief Function passed to each service during thread creation using pthread_create() 
+ *
+ * @param thread_ctx_ptr Pointer to the thread_ctx object
+ * 
+ * @detailed The function waits for the semaphore from the sequencer based on the tick count. Each service thread has its own semaphore variable from the global array g_sem
+ */
 void *generic_service(void *thread_ctx_ptr);
 
 #endif /* !__SERVICES_H__

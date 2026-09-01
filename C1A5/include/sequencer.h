@@ -8,10 +8,11 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file sequencer.h
+ * @brief Header file for sequencer.c
  *
  * @description
+ * The Sequencer object is created which will be running on its own thread and thread attributes variable for real time behavior. Additionally, there are flag variables to track Sequencer thread creation and cleanup.
  *
  * @author Anirudh Singh
  * @date 20th August 2026
@@ -30,12 +31,38 @@ typedef struct {
   int thread_created;
 } Sequencer;
 
+/**
+ * Semaphore lifetime
+ */
 int sequencer_sems_init(void);
 int sequencer_sems_destroy(void);
 
+/**
+ * @brief Initialise the attributes with realtime scheduling
+ *
+ * @param p_time Pointer to the Sequencer object
+ */
 int sequencer_init(Sequencer *p_seq);
+
+/**
+ * @brief Destroying the Sequencer thread object attributes 
+ *
+ * @param p_time Pointer to the Sequencer object
+ */
 int sequencer_attr_destroy(Sequencer *p_seq);
+
+/**
+ * @brief Starting the sequencer thread using the sequencer_thread_func()
+ *
+ * @param p_time Pointer to the Sequencer object
+ */
 int sequencer_start(Sequencer *p_seq);
+
+/**
+ * @brief Joining the sequencer thread and closing the timer file descriptor
+ *
+ * @param p_time Pointer to the Sequencer object
+ */
 int sequencer_join(Sequencer *p_seq);
 
 #endif /* !SEQUENCER_H

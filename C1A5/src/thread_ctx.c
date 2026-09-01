@@ -8,10 +8,9 @@
  *************************************************************************/
 
 /**
- * @file app_config.h
- * @brief
+ * @file thread_ctx.c
  *
- * @description
+ * @brief Source file for thread_ctx.h
  *
  * @author Anirudh Singh
  * @date 20th August 2026

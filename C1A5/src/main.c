@@ -11,6 +11,15 @@
  * @file main.c
  * @brief Main function
  *
+ * @description
+ * * Launch the system logging
+ * * Record the time of start of program to be stored inside a global variable
+ * * Get system info
+ * * Get default thread and scheduling attributes
+ * * Initialising semaphores and sequencer thread
+ * * Creating threads and launching the sequencer
+ * * Finally, join all the threads, sequencer and perform cleanup
+ *
  * @author Anirudh Singh
  * @date 20th August 2026
  */
