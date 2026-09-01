@@ -163,6 +163,11 @@ int sequencer_join(Sequencer *p_seq) {
 void *sequencer_thread_func(void *ptr) {
   Sequencer *ptr_sequencer = (Sequencer *)(ptr);
 
+  /*
+   * Get the core that the Sequencer thread is running on
+   */
+  int core = sched_getcpu();
+  syslog(LOG_INFO, "%s: Sequencer thread running on core : %d\n", COURSE_PREFIX, core);
   syslog(LOG_INFO, "Sequencer thread started for object %p\n", (void *)ptr_sequencer);
 
   struct itimerspec its;
@@ -218,10 +223,12 @@ void *sequencer_thread_func(void *ptr) {
     g_abort_services[i] = 1;
     sem_post(&g_sem[i]);
   }
-  syslog(LOG_CRIT,
-         "Sequencer thread exiting normally: tick_count = %llu, TOTAL_TICKS = %llu\n",
-         (unsigned long long)tick_count,
-         (unsigned long long)TOTAL_TICKS);
+
+  // Get the logs for the tick_count and TOTAL_TICKS
+  // syslog(LOG_CRIT,
+  //        "Sequencer thread exiting normally: tick_count = %llu, TOTAL_TICKS = %llu\n",
+  //        (unsigned long long)tick_count,
+  //        (unsigned long long)TOTAL_TICKS);
 
   close(g_timer_fd);
   g_timer_fd = -1;
