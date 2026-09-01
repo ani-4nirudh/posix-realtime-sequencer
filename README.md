@@ -5,6 +5,14 @@ This repo contains the code for the assignments completed for the *University of
 <sub>*Fig. 1: C1A5 Demo*</sub>
 
 # C1A5: Overview
+
+This project demonstrates real-time embedded systems programming using **POSIX** threads and scheduling on Linux. It's designed to:
+
+- Learn real-time scheduling concepts (`SCHED_FIFO`, priorities, CPU affinity)
+- Practice concurrent programming with `pthreads` and semaphores
+- Understand timer-based systems using `timerfd_create()` and `timerfd_settime()` for precise timing
+- Build a deterministic sequencer that dispatches periodic tasks with *sub-millisecond* accuracy
+
 ## Build Instructions
 Each assignment directory has its own `Makefile`.
 ```
@@ -27,7 +35,7 @@ sudo ./main.out
 <sub>*Fig. 3: Detailed Overview*</sub>
 
 ![Sequence Diagram](./static/sequence_diagram-1.png)
-<sub>*Fig. 2: Sequence Diagram*</sub>
+<sub>*Fig. 4: Sequence Diagram*</sub>
 
 # Assignment Brief
 The assignments are tagged according to the course structure.
