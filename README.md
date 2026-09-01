@@ -2,12 +2,13 @@
 This repo contains the code for the assignments completed for the *University of Colorado Boulder* Course: [Real-Time Embedded Systems Concepts and Practices](https://www.coursera.org/learn/real-time-embedded-systems-concepts-practices)
 
 ![Demo](./static/realtime-sequencer.gif)
-*Fig. 1: C1A5 Demo*
+<sub>*Fig. 1: C1A5 Demo*</sub>
 
-# Build Instructions
+# C1A5: Overview
+## Build Instructions
 Each assignment directory has its own `Makefile`.
 ```
-# Clean the priject directory
+# Clean the project directory
 make clean
 
 # Build the final executable
@@ -15,8 +16,18 @@ make build
 
 # Run
 sudo ./main.out
-
 ```
+
+
+## Architecture Overview
+![Architecture Overview](./static/architecture_overview-1.png)
+<sub>*Fig. 2: Architecture Overview*</sub>
+
+![Detailed Overview](./static/detailed_overview-1.png)
+<sub>*Fig. 3: Detailed Overview*</sub>
+
+![Sequence Diagram](./static/sequence_diagram-1.png)
+<sub>*Fig. 2: Sequence Diagram*</sub>
 
 # Assignment Brief
 The assignments are tagged according to the course structure.
