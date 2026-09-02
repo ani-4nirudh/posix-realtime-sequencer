@@ -46,5 +46,11 @@ static const unsigned int THREAD_RATES[NUM_THREADS] = {
     1000 // 10s
 };
 
+/**
+ * Some mathematics for the thread rates:
+ * - Number of releases (R) for a service (S):
+ *   R = (TOTAL_TICKS * Timer Firing Period i.e. 10 ms) / (Time Period for S)
+ *   Thread Rate = Time Period for S / Timer Firing Period
+
 #endif /* !APP_CONFIG_H
 #define APP_CONFIG_H */
