@@ -5,8 +5,7 @@ This repo contains the code for the assignments completed for the *University of
 <sub>*Fig. 1: C1A5 Demo*</sub>
 
 # C1A5: Overview
-
-This project demonstrates real-time embedded systems programming using **POSIX** threads and scheduling on Linux. It's designed to:
+This project uses a **soft-realtime** cyclic executive on stock Linux, with a periodic sequencer dispatching tasks via semaphores. It's designed to:
 
 - Learn real-time scheduling concepts (`SCHED_FIFO`, priorities, CPU affinity)
 - Practice concurrent programming with `pthreads` and semaphores
