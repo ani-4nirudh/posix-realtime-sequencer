@@ -28,13 +28,13 @@ sudo ./main.out
 
 
 ## Architecture Overview
-![Architecture Overview](./static/architecture_overview-1.png)
+![Architecture Overview](./static/architecture_overview.png)
 <sub>*Fig. 2: Architecture Overview*</sub>
 
-![Detailed Overview](./static/detailed_overview-1.png)
+![Detailed Overview](./static/detailed_overview.png)
 <sub>*Fig. 3: Detailed Overview*</sub>
 
-![Sequence Diagram](./static/sequence_diagram-1.png)
+![Sequence Diagram](./static/sequence_diagram.png)
 <sub>*Fig. 4: Sequence Diagram*</sub>
 
 # Assignment Brief
