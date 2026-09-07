@@ -1,19 +1,20 @@
 # Introduction
 This repo contains the code for the assignments completed for the *University of Colorado Boulder* Course: [Real-Time Embedded Systems Concepts and Practices](https://www.coursera.org/learn/real-time-embedded-systems-concepts-practices)
 
+# C1A5: Overview
+
 ![Demo](./static/realtime-sequencer.gif)
 <sub>*Fig. 1: C1A5 Demo*</sub>
 
-# C1A5: Overview
-This project uses a **soft-realtime** cyclic executive on stock Linux, with a periodic sequencer dispatching tasks via semaphores. It's designed to:
+This project uses a *realtime* sequencer dispatching periodic tasks via semaphores. In this way it emulates a realtime Interrupt Service Routine (ISR) used in embedded systems. This repo is designed to learn real time programming concepts in a general purpose OS (here, Linux) using POSIX realtime extensions.
 
+The assignments progress from `C1A1` to `C1A5` with increasing complexity to learn the following concepts:
 - Learn real-time scheduling concepts (`SCHED_FIFO`, priorities, CPU affinity)
 - Practice concurrent programming with `pthreads` and semaphores
 - Understand timer-based systems using `timerfd_create()` and `timerfd_settime()` for precise timing
 - Build a deterministic sequencer that dispatches periodic tasks with *sub-millisecond* accuracy
 
 ## Build Instructions
-Each assignment directory has its own `Makefile`.
 ```
 # Clean the project directory
 make clean
